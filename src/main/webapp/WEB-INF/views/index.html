@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png"/>
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"/>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="stylesheet" th:href="@{/css/app.css}"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+          integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300&display=swap" rel="stylesheet">
+
+    <script th:src="@{/js/jquery-3.6.0.js}"></script>
+    <script th:src="@{/js/app.js}"></script>
+    <script th:src="@{/js/index.js}"></script>
+    <title>TikTok</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <script src="sweetalert2.all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/promise-polyfill"></script>
+
+    <script
+            src="https://code.jquery.com/jquery-3.7.0.js"
+            integrity="sha256-JlqSTELeR4TLqP0OG9dxM7yDPqX1ox/HfgiSLBj8+kM="
+            crossorigin="anonymous">
+
+    </script>
+    <script th:inline="javascript">
+        function handleLike(videoId, button) {
+            var userlogin = button.getAttribute('data-userlogin'); // Lấy giá trị từ thuộc tính data-userlogin
+            var heart = button.querySelector('img');
+            var likeCount = button.nextElementSibling; // Đây là thẻ <span> chứa số lượt like
+
+            // Kiểm tra nếu userlogin có thì không tăng like
+            if (userlogin === 'true' && heart.getAttribute('src') === '/img/heart_gray.png') {
+                heart.setAttribute('src', '/img/heart.png');
+
+                $.ajax({
+                    url: `http://localhost:8081/video/likeAdd/${videoId}`,
+                    method: 'GET',
+                    dataType: 'json',
+                    headers: {
+                        'Accept': 'application/json'
+                    },
+                    success: function (newLikeCount) {
+                        likeCount.textContent = newLikeCount.toString(); // Cập nhật số lượt like trên trang
+                    },
+                    error: function (error) {
+                        console.error('Error:', error);
+                    }
+                });
+            } else if (userlogin === 'true' && heart.getAttribute('src') === '/img/heart.png') {
+                heart.setAttribute('src', '/img/heart_gray.png');
+
+                $.ajax({
+                    url: `http://localhost:8081/video/decreareLike/${videoId}`,
+                    method: 'GET',
+                    dataType: 'json',
+                    headers: {
+                        'Accept': 'application/json'
+                    },
+                    success: function (newLikeCount) {
+                        likeCount.textContent = newLikeCount.toString(); // Cập nhật số lượt like trên trang
+                    },
+                    error: function (error) {
+                        console.error('Error:', error);
+                    }
+                });
+            } else {
+                // Hiển thị thông báo khi chưa đăng nhập
+                Swal.fire({
+                    icon: 'error',
+                    title: 'You must login',
+                    text: 'You need to login to like this post!',
+                });
+            }
+        }
+
+    </script>
+    <script>
+        function followUser(userId) {
+            $.ajax({
+                url: `/follow/${userId}`,
+                method: 'POST',
+                dataType: 'json',
+                headers: {
+                    'Accept': 'application/json'
+                },
+                success: function (response) {
+                    console.log(response);
+                    var button = $(`button[onclick="followUser(${userId})"]`);
+                    button.text("Following");
+                    button.removeClass("bg-red-500");
+                    button.addClass("bg-black");
+                    button.css("color", "white");
+                },
+                error: function (error) {
+                    alert('Error: ' + error.responseJSON.message);
+                }
+            });
+        }
+    </script>
+
+
+</head>
+
+<body class="antialiased font-confortaa">
+<header class="bg-white fixed mx-auto w-screen z-50 shadow-lg">
+    <div class="flex justify-between nav-header p-4 h-20 items-center  mx-auto pr-8">
+        <a th:href="@{/home}" class="cursor-pointer">
+            <img style="width: 100px;height:67px;" th:src="@{/login/logo.png}" alt="logo" class="w-36 h-8"/>
+        </a>
+
+        <button>
+            <a th:href="@{/seller}">Kênh người bán</a></button>
+        <div class="hidden sm:flex divide-x-2 divide-gray-300 p-2 rounded-full bg-gray-200 gap-4">
+            <input type="text" class="px-2 py-1 bg-gray-200 outline-none w-64" placeholder="Find accounts"/>
+            <button>
+                <img th:src="@{/img/ic_search.svg}" alt="search" class="mx-2 w-5"/>
+            </button>
+        </div>
+
+
+        <div th:if="${session.userlogin}==null">
+            <a
+                    class="hidden sm:flex px-8 xl:px-16 bg-red-500 rounded-md text-white hover:bg-red-700 py-2"
+                    th:href="@{/login}">Login</a>
+        </div>
+        <div th:unless="${session.userlogin}==null" class="sm:flex items-center gap-4 hidden">
+            <div style="background-color: darkgray;margin-right: 12px;opacity: 0.7;padding: 9px;border-radius:7px "
+                 class="p-1 ">
+                <a th:href="@{/upload}">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Tải lên</span>
+                </a>
+
+            </div>
+            <a th:href="@{/chat}">
+                <img th:src="@{/img/icons/ic_chat.svg}" alt="chat icon" class="w-6 h-6"/>
+            </a>
+            <a th:href="@{/notification}">
+                <img th:src="@{/img/icons/ic_notif.svg}" alt="chat icon" class="w-6 h-6"/>
+            </a>
+            <div class="flex items-center gap-2 relative">
+                <div class="rounded-full border-red-500 border w-10 h-10 flex-shrink-0">
+                    <img th:src="${session.userlogin.avatar}" alt="user avatar"/>
+                </div>
+                <div class="btn-menu flex gap-1 cursor-pointer">
+                    <span class="font-confortaa text-md font-bold" th:text="${session.userlogin.username}"></span>
+                    <img th:src="@{/img/icons/angle_down.svg}" alt="down icon" class="icon-menu"/>
+                </div>
+                <div
+                        class="hidden toggle-menu bg-white absolute right-0 bottom-0 transform translate-y-full px-8 py-2 shadow-xl mt-4 border">
+                    <ul>
+                        <li>
+                            <a th:href="@{/myprofile}">Profile</a>
+                        </li>
+                        <li>
+                            <button class="btn-logout">
+                                <a th:href="@{/logout}">Log out</a></button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+
+        <button class="flex sm:hidden absolute right-5 menu-button" id="">
+            <img th:src="@{/img/menu.svg}" alt="menu icon" id="menu-icon"/>
+        </button>
+    </div>
+    <div class="hidden absolute bg-white flex flex-col h-full left-0 min-h-screen items-center right-0 shadow-lg gap-4"
+         id="menu-mobile">
+        <div class="category-list flex flex-col  gap-4"></div>
+        <button class="px-8 xl:px-16 bg-red-500 rounded-md text-white hover:bg-red-700 py-2">Register</button>
+    </div>
+</header>
+
+<main class="flex xl:mx-auto md:px-6 bg-white lg:py-0">
+    <div class="lg:px-20 hidden sm:flex sm:w-5/12 md:w-4/12 divide-y-2 mt-15 justify-center items-center flex-col gap-10 overflow-y-auto">
+        <div class="sidebar bottom-0 fixed flex h-3/4 justify-center mt-32 mb-20 overflow-y-auto top-0 ">
+            <div class="flex items-start flex-col px-10 divide-y-2">
+                <div class="category-list flex flex-col gap-4 xl:gap-6 pb-10">
+                </div>
+                <div class="pt-10 flex flex-col gap-5">
+                    <span class="text-gray-500">Suggest People</span>
+                    <div id="user-list" class="flex flex-col gap-4 xl:gap-5">
+                    </div>
+                    <span class="text-red-500 cursor-pointer">See all</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="w-full sm:w-8/12 min-h-screen">
+        <div class="pb-40 grid h-max flex flex-col gap-5 py-5 overflow-y-auto mt-20 sm:px-10 "
+             style="max-width: 900px;">
+
+            <div th:each="v : ${allVideo}">
+                <div class="flex flex-col pb-8">
+                    <div class="hidden sm:flex items-center justify-between my-4 gap-4">
+                        <div class="flex items-center">
+                            <div class="w-14">
+                                <img class="w-12 h-12 rounded-full" th:src="@{|/login/${v.user.avatar}|}">
+                            </div>
+                            <div class="flex-1 pl-2">
+                                <div class="text-black flex items-center  font-semibold">
+                                    <p class="text-sm text-black" th:text="${v.user.username}"></p>
+                                    <img class="w-5 h-auto ml-1" th:src="@{/img/flag_us.png}">
+                                </div>
+                                <div class="text-gray text-sm" th:text="${v.description}">
+
+                                </div>
+                            </div>
+                        </div>
+                        <th:block th:if="${session.userlogin != null}">
+                            <button class="px-6 bg-red-500 rounded-md text-white hover:bg-red-700 py-1 follow-button"
+                                    th:if="${followings != null and !followings.contains(v.user)}"
+                                    th:onclick="|followUser(${v.user.id})|"
+                                    th:text="Follow">
+                            </button>
+
+                            <button class="px-6 bg-red-500 rounded-md text-white hover:bg-red-700 py-1 follow-button following-button"
+                                    th:unless="${followings != null and !followings.contains(v.user)}"
+                                    th:text="Following">
+                            </button>
+
+                        </th:block>
+
+                    </div>
+                    <div class="flex items-center place-content-between border-b pb-10">
+                        <div class="flex flex-row lg:justify-start md:pl-14 relative w-full">
+                            <video id="frame" th:src="@{|/video/${v.videoUrlNotFile}|}" controls autoplay
+                                   class="w-full sm:w-2/3 md:w-1/2 sm:rounded-md"></video>
+                            <div class="hidden sm:flex flex-col justify-between h-auto ml-5 items-center">
+                                <div class="flex flex-col w-auto">
+                                    <button class="flex items-center justify-center my-2 bg-gray-200 rounded px-2 py-3 decrease">
+                                        <img th:src="@{/img/button_up.png}" class="h-4 "/>
+                                    </button>
+                                    <button class="flex items-center justify-center my-2 bg-gray-200 rounded px-2 py-3 increase">
+                                        <img th:src="@{/img/button_down.png}" class="h-4 "/>
+                                    </button>
+                                </div>
+                                <div class="flex flex-col w-auto">
+                                    <div class="flex flex-col w-auto items-center">
+                                        <button th:attr="data-userlogin=${session.userlogin != null ? 'true' : 'false'}"
+                                                th:onclick="|handleLike(${v.id}, this)|"
+                                                class="flex items-center justify-center my-1 rounded-full bg-gray-200 px-3 py-3">
+                                            <img th:src="@{/img/heart_gray.png}" class="w-4"/>
+                                        </button>
+                                        <span class="text-gray text-sm" th:text="*{v.like}"></span>
+                                    </div>
+                                    <div class="flex flex-col w-auto items-center">
+                                        <button class="flex items-center justify-center my-1 rounded-full bg-gray-200 px-3 py-3">
+                                            <a th:href="@{|/comment/${v.id}|}">
+                                                <img th:src="@{/img/comment.png}" class="w-4"/>
+
+                                            </a>
+                                        </button>
+                                        <span class="text-gray text-sm">0</span>
+                                    </div>
+                                    <div class="flex flex-col w-auto items-center">
+                                        <button class="flex items-center justify-center my-1 rounded-full bg-gray-200 px-3 py-3">
+                                            <img th:src="@{/img/star.png}" class="w-4"/>
+                                        </button>
+                                        <span class="text-gray text-sm">0</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!--                          Cut  -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+        </div>
+    </div>
+</main>
+</body>
+</html>
+
+<!--                            <div class="sm:hidden absolute bottom-0 left-0 right-0 pb-10">-->
+<!--                                <div class="flex items-end relative w-full">-->
+<!--                                    <div class="absolute bottom-0 flex flex-col pl-5">-->
+<!--                                        <p class="text-white text-1xl">@femaleuser</p>-->
+<!--                                        <p class="text-white text-sm w-2/3">Hey, I’m looking for new people-->
+<!--                                            nearby and you so?</p>-->
+<!--                                        <div class="flex items-start mt-3 flex-col gap-4">-->
+<!--                                            <p class="text-sm text-white ml-1">Mississippi, USA</p>-->
+<!--                                            <img class="w-6 h-4" th:src="@{/img/flag_ca.png}">-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                    <div class="flex flex-col pr-5 gap-2 absolute right-0 pb-10">-->
+<!--                                        <div class="flex flex-col w-auto items-center">-->
+<!--                                            <img th:src="@{/img/heart_gray.png}" class="w-7"/>-->
+<!--                                            <span class="text-gray-400 text-sm">0</span>-->
+<!--                                        </div>-->
+<!--                                        <div class="flex flex-col w-auto items-center">-->
+<!--                                            <img th:src="@{/img/comment_gray.png}" class="w-7"/>-->
+<!--                                            <span class="text-gray-400 text-sm">0</span>-->
+<!--                                        </div>-->
+<!--                                        <div class="flex flex-col w-auto items-center">-->
+<!--                                            <img th:src="@{/img/star_gray.png}" class="w-7"/>-->
+<!--                                            <span class="text-gray-400 text-sm">0</span>-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->

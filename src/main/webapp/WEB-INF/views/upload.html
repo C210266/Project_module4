@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png"/>
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"/>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="stylesheet" th:href="@{css/app.css}"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+          integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300&display=swap" rel="stylesheet">
+    <script th:src="@{/js/jquery-3.6.0.js}"></script>
+    <script th:src="@{/js/app.js}"></script>
+    <script th:src="@{/js/index.js}"></script>
+    <title>SwipSwop</title>
+</head>
+<body class="antialiased font-confortaa">
+<header class="bg-white fixed mx-auto w-screen z-50 shadow-lg">
+    <div class="flex justify-between nav-header p-4 h-20 items-center  mx-auto pr-8">
+        <a th:href="@{/home}" class="cursor-pointer">
+            <img style="width: 100px;height:67px;" th:src="@{/login/logo.png}" alt="logo" class="w-36 h-8"/>
+        </a>
+
+        <button>
+            <a th:href="@{/seller}">Kênh người bán</a></button>
+        <div class="hidden sm:flex divide-x-2 divide-gray-300 p-2 rounded-full bg-gray-200 gap-4">
+            <input type="text" class="px-2 py-1 bg-gray-200 outline-none w-64" placeholder="Find accounts"/>
+            <button>
+                <img th:src="@{/img/ic_search.svg}" alt="search" class="mx-2 w-5"/>
+            </button>
+        </div>
+
+
+        <div th:if="${session.userlogin}==null">
+            <a
+                    class="hidden sm:flex px-8 xl:px-16 bg-red-500 rounded-md text-white hover:bg-red-700 py-2"
+                    th:href="@{/register}">Register</a>
+        </div>
+        <div th:unless="${session.userlogin}==null" class="sm:flex items-center gap-4 hidden">
+            <div style="background-color: darkgray;margin-right: 12px;opacity: 0.7;padding: 9px;border-radius:7px "
+                 class="p-1 ">
+                <a th:href="@{/upload}">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Tải lên</span>
+                </a>
+
+            </div>
+            <a th:href="@{/chat}">
+                <img th:src="@{/img/icons/ic_chat.svg}" alt="chat icon" class="w-6 h-6"/>
+            </a>
+            <a th:href="@{/notification}">
+                <img th:src="@{/img/icons/ic_notif.svg}" alt="chat icon" class="w-6 h-6"/>
+            </a>
+            <div class="flex items-center gap-2 relative">
+                <div class="rounded-full border-red-500 border w-10 h-10 flex-shrink-0">
+                    <img th:src="${session.userlogin.avatar}" alt="user avatar"/>
+                </div>
+                <div class="btn-menu flex gap-1 cursor-pointer">
+                    <span class="font-confortaa text-md font-bold" th:text="${session.userlogin.username}"></span>
+                    <img th:src="@{/img/icons/angle_down.svg}" alt="down icon" class="icon-menu"/>
+                </div>
+                <div
+                        class="hidden toggle-menu bg-white absolute right-0 bottom-0 transform translate-y-full px-8 py-2 shadow-xl mt-4 border">
+                    <ul>
+                        <li>
+                            <a th:href="@{/myprofile}">Profile</a>
+                        </li>
+                        <li>
+                            <button class="btn-logout">
+                                <a th:href="@{/logout}">Log out</a></button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+
+        <button class="flex sm:hidden absolute right-5 menu-button" id="">
+            <img th:src="@{/img/menu.svg}" alt="menu icon" id="menu-icon"/>
+        </button>
+    </div>
+    <div class="hidden absolute bg-white flex flex-col h-full left-0 min-h-screen items-center right-0 shadow-lg gap-4"
+         id="menu-mobile">
+        <div class="category-list flex flex-col  gap-4"></div>
+        <button class="px-8 xl:px-16 bg-red-500 rounded-md text-white hover:bg-red-700 py-2">Register</button>
+    </div>
+</header>
+
+<main class="flex xl:mx-auto md:px-6 bg-white lg:py-0">
+    <form style="text-align: center; margin-top: 134px;margin-left: 18%;padding-bottom: 76px" th:action="@{/upload}"
+          th:object="${uploadFile}" method="post"
+          enctype="multipart/form-data">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        <h1>Chọn video để tải lên</h1><br>
+        <p>Kéo và thả tập tin</p>
+        <p>Có thể tách video dài thành nhiều phần để tăng khả năng hiển thị</p>
+        <br>
+        <hr>
+        <p style="margin-top: 24px">Hỗ trợ định dạng video mp4, avi,webm và mov</p>
+        <div style="display: flex;align-items: center;justify-content: center">
+            <input type="file" th:field="*{videoUrl}">
+            <label>Title</label>
+            <input type="text" th:field="*{title}" style="border-radius: 17px; margin:  0 13px; border: groove">
+            <label>Description</label>
+            <textarea style="border-radius: 17px; margin:  0 13px; border: groove" type="text" placeholder="Mo ta" th:field="*{description}"></textarea>
+        </div>
+
+        <input type="submit"> Chọn tập tin
+    </form>
+</main>
+<hr>
+<footer style="display: flex; justify-content: space-around; margin-top: 24px">
+    <img style="width: 100px;" th:src="@{/login/logo.png}" alt="">
+    <div>
+        <h4>Cong ty</h4>
+        <p>Bang tin</p>
+        <p>Lien he</p>
+        <p>Su nghiep</p>
+    </div>
+    <div>
+        <h4>Chuong trinh</h4>
+        <p>Tiktok for Good</p>
+        <p>Quang cao</p>
+        <p>Su nghiep</p>
+    </div>
+    <div>
+        <h4>Ho tro</h4>
+        <p>Tiktok for Good</p>
+        <p>Quang cao</p>
+        <p>Su nghiep</p>
+    </div>
+
+</footer>
+</body>
+</html>

@@ -1,0 +1,294 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png"/>
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"/>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="stylesheet" th:href="@{/css/app.css}"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+          integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300&display=swap" rel="stylesheet">
+
+    <script th:src="@{/js/jquery-3.6.0.js}"></script>
+    <script th:src="@{/js/app.js}"></script>
+    <script th:src="@{/js/index.js}"></script>
+    <title>TikTok</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script
+            src="https://code.jquery.com/jquery-3.7.0.js"
+            integrity="sha256-JlqSTELeR4TLqP0OG9dxM7yDPqX1ox/HfgiSLBj8+kM="
+            crossorigin="anonymous">
+
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300&display=swap');
+
+        html,
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+
+        }
+
+        body {
+            /*place-items: center;*/
+            font-family: 'Source Sans Pro', sans-serif;
+        }
+
+        .card {
+            position: relative;
+            display: flex;
+            padding: 20px;
+            flex-direction: column;
+            min-width: 0;
+            word-wrap: break-word;
+            background-color: #fff;
+            background-clip: border-box;
+            border: 1px solid #d2d2dc;
+            border-radius: 11px;
+            -webkit-box-shadow: 0px 0px 5px 0px rgb(249, 249, 250);
+            -moz-box-shadow: 0px 0px 5px 0px rgba(212, 182, 212, 1);
+            box-shadow: 0px 0px 5px 0px rgb(161, 163, 164)
+        }
+
+        .media img {
+
+            width: 60px;
+            height: 60px;
+        }
+
+
+        .reply a {
+
+            text-decoration: none;
+        }
+
+        .formm {
+            position: absolute;
+            bottom: 0%;
+            width: 100%;
+        }
+
+        .cmt {
+            outline: auto;
+            width: 89%;
+            border-radius: 12px;
+        }
+
+        .col-md-6-test {
+            -ms-flex: 0 0 50%;
+            /* flex: 0 0 50%; */
+            max-width: 34%;
+        }
+    </style>
+    <script th:inline="javascript">
+        function callAjaxForComment(videoId, button) {
+            var form = button.closest('.formm');
+            var contentInput = form.querySelector('input[name="content"]');
+            var content = contentInput.value;
+            var userlogin = button.getAttribute('data-userlogin');
+
+            if (userlogin === 'true') {
+                $.ajax({
+                    url: `http://localhost:8081/comment/commentAdd/${videoId}`,
+                    method: 'POST',
+                    data: {
+                        content: content
+                    },
+                    dataType: 'json',
+                    headers: {
+                        'Accept': 'application/json'
+                    },
+                    success: function (response) {
+                        // Thêm comment mới vào danh sách và cập nhật giao diện
+                        var commentDTOList = [[${commentDTOList}]];
+                        var user = [[${userlogin}]];
+                        var newComment = {
+                            user: user,
+                            videoId: videoId,
+                            content: content
+                        };
+                        commentDTOList.push(newComment);
+                        contentInput.value = ''; // Xóa nội dung input
+                    },
+                    error: function (error) {
+                        console.error('Error:', error);
+                    }
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'You must login',
+                    text: 'You need to login to like this post!',
+                });
+            }
+        }
+    </script>
+
+
+</head>
+<body>
+
+<header style="position: inherit" class="bg-white fixed mx-auto w-screen z-50 shadow-lg">
+    <div class="flex justify-between nav-header p-4 h-20 items-center  mx-auto pr-8">
+        <a th:href="@{/home}" class="cursor-pointer">
+            <img style="width: 100px;height:67px;" th:src="@{/login/logo.png}" alt="logo" class="w-36 h-8"/>
+        </a>
+
+        <button>
+            <a th:href="@{/seller}">Kênh người bán</a></button>
+        <div class="hidden sm:flex divide-x-2 divide-gray-300 p-2 rounded-full bg-gray-200 gap-4">
+            <input type="text" class="px-2 py-1 bg-gray-200 outline-none w-64" placeholder="Find accounts"/>
+            <button>
+                <img th:src="@{/img/ic_search.svg}" alt="search" class="mx-2 w-5"/>
+            </button>
+        </div>
+
+
+        <div th:if="${session.userlogin}==null">
+            <a
+                    class="hidden sm:flex px-8 xl:px-16 bg-red-500 rounded-md text-white hover:bg-red-700 py-2"
+                    th:href="@{/register}">Register</a>
+        </div>
+        <div th:unless="${session.userlogin}==null" class="sm:flex items-center gap-4 hidden">
+            <div style="background-color: darkgray;margin-right: 12px;opacity: 0.7;padding: 9px;border-radius:7px "
+                 class="p-1 ">
+                <a th:href="@{/upload}">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Tải lên</span>
+                </a>
+
+            </div>
+            <a th:href="@{/chat}">
+                <img th:src="@{/img/icons/ic_chat.svg}" alt="chat icon" class="w-6 h-6"/>
+            </a>
+            <a th:href="@{/notification}">
+                <img th:src="@{/img/icons/ic_notif.svg}" alt="chat icon" class="w-6 h-6"/>
+            </a>
+            <div class="flex items-center gap-2 relative">
+                <div class="rounded-full border-red-500 border w-10 h-10 flex-shrink-0">
+                    <img th:src="${session.userlogin.avatar}" alt="user avatar"/>
+                </div>
+                <div class="btn-menu flex gap-1 cursor-pointer">
+                    <span class="font-confortaa text-md font-bold" th:text="${session.userlogin.username}"></span>
+                    <img th:src="@{/img/icons/angle_down.svg}" alt="down icon" class="icon-menu"/>
+                </div>
+                <div
+                        class="hidden toggle-menu bg-white absolute right-0 bottom-0 transform translate-y-full px-8 py-2 shadow-xl mt-4 border">
+                    <ul>
+                        <li>
+                            <a th:href="@{/myprofile}">Profile</a>
+                        </li>
+                        <li>
+                            <button class="btn-logout">
+                                <a th:href="@{/logout}">Log out</a></button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+
+        <button class="flex sm:hidden absolute right-5 menu-button" id="">
+            <img th:src="@{/img/menu.svg}" alt="menu icon" id="menu-icon"/>
+        </button>
+    </div>
+    <div class="hidden absolute bg-white flex flex-col h-full left-0 min-h-screen items-center right-0 shadow-lg gap-4"
+         id="menu-mobile">
+        <div class="category-list flex flex-col  gap-4"></div>
+        <button class="px-8 xl:px-16 bg-red-500 rounded-md text-white hover:bg-red-700 py-2">Register</button>
+    </div>
+</header>
+
+<div>
+    <div class="row d-flex" style="margin-top:90px; justify-content: center">
+
+        <div class="col-md-6-test" style="width: 50%;">
+            <div class="card">
+                <div class="row">
+                    <div class="col-md-12">
+                        <video controls autoplay th:src="@{|/video/${videoDTOInfo.videoUrlNotFile}|}"></video>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+        <div class="col-md-6-test card" style="width: 50%;">
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="mb-2 d-flex rounded-full border-red-500 border w-10 h-10 flex-shrink-0">
+                        <img th:src="@{|/login/${videoDTOInfo.user.avatar}|}">
+                        <h4 style="margin-left: 14px" th:text="${videoDTOInfo.user.username}"></h4></h3>
+
+                    </div>
+                    <hr>
+                    <div>
+                        <th:block th:each="comment : ${commentDTOList}">
+                            <div class="media">
+                                <img class="mr-3 rounded-circle" alt="Bootstrap Media Preview"
+                                     th:src="@{|/login/${comment.user.avatar}|}"/>
+                                <div class="media-body">
+                                    <div class="row">
+                                        <div class="col-8 d-flex">
+                                            <h5 th:text="${comment.user.username}"></h5>
+                                            <span th:if="${comment.user.username == videoDTOInfo.user.username}"
+                                                  style="color: red;">(Tác giả)</span>
+                                            <span th:text="${comment.createdAt}"></span>
+                                        </div>
+
+                                        <div class="col-4">
+
+                                            <div class="pull-right reply">
+
+                                                <a href="#"><span><i class="fa fa-reply"></i> reply</span></a>
+
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                    <p th:text="${comment.content}"></p>
+                                </div>
+                            </div>
+                        </th:block>
+                    </div>
+
+
+                </div>
+            </div>
+
+            <div th:object="${newCmtDTO}" class="formm">
+                <input type="text" th:field="*{content}" name="content" class="cmt" style="padding-left: 6px"
+                       placeholder="Write here ......">
+                <button th:attr="data-userlogin=${session.userlogin != null ? 'true' : 'false'}"
+                        th:onclick="|callAjaxForComment(${videoDTOInfo.id},this)|"
+                        style="background-color: black;border-radius: 9px;width: 34px;height: 26px;">
+                    <i style="color: #fff" class="fa-solid fa-caret-right"></i>
+                </button>
+
+            </div>
+
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
